@@ -14,7 +14,7 @@ module MongoHelper
 
     def random_token
       # use base64url as defined by RFC4648
-      ActiveSupport::SecureRandom.base64(15).tr('+/=', '').strip.delete("\n")
+      SecureRandom.base64(15).tr('+/=', '').strip.delete("\n")
     end
   end
 
