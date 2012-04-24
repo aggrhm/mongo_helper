@@ -16,6 +16,16 @@ module MongoHelper
       # use base64url as defined by RFC4648
       SecureRandom.base64(15).tr('+/=', '').strip.delete("\n")
     end
+
+		def enum_methods!(enum, opts)
+			enum = enum.to_s
+			define_method "#{enum}?" do |opt|
+				send(enum) == opts[opt]
+			end
+			define_method "#{enum}!" do |opt|
+				send("#{enum}=", opts[opt])
+			end
+		end
   end
 
 end
