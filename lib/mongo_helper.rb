@@ -26,6 +26,12 @@ module MongoHelper
 				send("#{enum}=", opts[opt])
 			end
 		end
+
+		def new_embedded
+			a = self.new
+			a.id = BSON::ObjectId.new
+			a
+		end
   end
 
 end
