@@ -32,6 +32,22 @@ module MongoHelper
 			a.id = BSON::ObjectId.new
 			a
 		end
+	end
+
+	module InstanceMethods
+		def save_embedded!(field, obj)
+			return false unless obj.valid?
+			if !self.find_embedded(field, obj.id)
+				arr = self.send field.to_sym
+				arr << obj
+			end
+			self.save
+		end
+
+		def find_embedded(field, id)
+			arr = self.send field.to_sym
+			arr.find {|m| m.id == id || m.id.to_s == id}
+		end
   end
 
 end
