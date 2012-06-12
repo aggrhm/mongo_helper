@@ -32,6 +32,14 @@ module MongoHelper
 			a.id = BSON::ObjectId.new
 			a
 		end
+
+		def mongo_new
+			a = self.new
+			a.id = BSON::ObjectId.new
+			a.created_at = Time.new if a.respond_to? :created_at
+			a.updated_at = Time.new if a.respond_to? :updated_at
+			return a
+		end
 	end
 
 	module InstanceMethods
