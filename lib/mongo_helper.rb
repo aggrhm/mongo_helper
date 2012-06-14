@@ -52,6 +52,15 @@ module MongoHelper
 			self.save
 		end
 
+		def delete_embedded!(field, obj)
+			return false if obj.nil?
+			if self.find_embedded(field, obj.id)
+				arr = self.send field.to_sym
+				arr.delete_if {|el| el.id == obj.id}
+			end
+			self.save
+		end
+
 		def find_embedded(field, id)
 			arr = self.send field.to_sym
 			arr.find {|m| m.id == id || m.id.to_s == id}
