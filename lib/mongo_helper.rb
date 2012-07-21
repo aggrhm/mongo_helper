@@ -63,7 +63,7 @@ module MongoHelper
 
 		def find_embedded(field, id)
 			arr = self.send field.to_sym
-			arr.find {|m| m.id == id || m.id.to_s == id}
+			arr.select{|m| m.id == id || m.id.to_s == id}.first
 		end
   end
 
