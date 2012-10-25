@@ -20,7 +20,12 @@ module MongoHelper
 		def enum_methods!(enum, opts)
 			enum = enum.to_s
 			define_method "#{enum}?" do |opt|
-				send(enum) == opts[opt]
+				val = send(enum)
+				if opt.class == Array
+					return opt.collect{|a| opts[a]}.include? val
+				else
+					return val == opts[opt]
+				end
 			end
 			define_method "#{enum}!" do |opt|
 				send("#{enum}=", opts[opt])
@@ -38,6 +43,7 @@ module MongoHelper
 			a.id = BSON::ObjectId.new
 			a.created_at = Time.new if a.respond_to? :created_at
 			a.updated_at = Time.new if a.respond_to? :updated_at
+			a.is_new = true if a.respond_to? :is_new
 			return a
 		end
 	end
