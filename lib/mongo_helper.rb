@@ -1,3 +1,5 @@
+require "mongo_helper/storable"
+
 module MongoHelper
   extend ActiveSupport::Concern
 
@@ -7,7 +9,7 @@ module MongoHelper
       alias_method("#{new_attr}=", "#{old_attr}=")
     end
 
-    def embedded_in(owner_name)
+    def embedded_in_mm(owner_name)
       alias_method(owner_name, :_parent_document)
       alias_method("#{owner_name}=", "_parent_document=")
     end
@@ -32,6 +34,22 @@ module MongoHelper
 			end
 		end
 
+		def mongoid_timestamps!
+			field :c_at, as: :created_at, type: Time
+			field :u_at, as: :updated_at, type: Time
+
+			set_callback(:create, :before) do |doc|
+				if doc.created_at.nil?
+					time = Time.now.utc
+					doc.created_at = time
+					doc.updated_at = time
+				end
+			end
+			set_callback(:update, :before) do |doc|
+				doc.updated_at = Time.now.utc
+			end
+		end
+
 		def new_embedded
 			a = self.new
 			a.id = BSON::ObjectId.new
@@ -40,7 +58,7 @@ module MongoHelper
 
 		def mongo_new
 			a = self.new
-			a.id = BSON::ObjectId.new
+			#a.id = BSON::ObjectId.new
 			a.created_at = Time.new if a.respond_to? :created_at
 			a.updated_at = Time.new if a.respond_to? :updated_at
 			a.is_new = true if a.respond_to? :is_new
@@ -48,29 +66,76 @@ module MongoHelper
 		end
 	end
 
-	module InstanceMethods
-		def save_embedded!(field, obj)
-			return false unless obj.valid?
-			if !self.find_embedded(field, obj.id)
-				arr = self.send field.to_sym
-				arr << obj
-			end
-			self.save
-		end
 
-		def delete_embedded!(field, obj)
-			return false if obj.nil?
-			if self.find_embedded(field, obj.id)
-				arr = self.send field.to_sym
-				arr.delete_if {|el| el.id == obj.id}
+	def self.ArrayOf(klass)
+		Class.new(Array) do |slf|
+			def slf.demongoize(obj)
+				ret = self.new
+				unless obj.nil?
+					obj.each{|el| ret << klass.from_hash(el)}
+				end
+				return ret
 			end
-			self.save
-		end
 
-		def find_embedded(field, id)
+			def slf.evolve(obj)
+				obj.mongoize
+			end
+
+			def slf.mongoize(obj)
+				obj.mongoize
+			end
+
+			def mongoize
+				self.collect{|el| el.to_hash.stringify_keys}
+			end
+		end
+	end
+
+	def self.HashOf(klass)
+		Class.new(klass) do |slf|
+			def slf.demongoize(obj)
+				ret = self.new
+				ret.from_hash(obj) unless obj.nil?
+				return ret
+			end
+
+			def slf.mongoize(obj)
+				obj.mongoize
+			end
+
+			def slf.evolve(obj)
+				obj.mongoize
+			end
+
+			def mongoize
+				self.to_hash.stringify_keys
+			end
+		end
+	end
+	
+	# INSTANCE METHODS
+
+	def save_embedded!(field, obj)
+		return false unless obj.valid?
+		if !self.find_embedded(field, obj.id)
 			arr = self.send field.to_sym
-			arr.select{|m| m.id == id || m.id.to_s == id}.first
+			arr << obj
 		end
-  end
+		self.save
+	end
+
+	def delete_embedded!(field, obj)
+		return false if obj.nil?
+		if self.find_embedded(field, obj.id)
+			arr = self.send field.to_sym
+			arr.delete_if {|el| el.id == obj.id}
+		end
+		self.save
+	end
+
+	def find_embedded(field, id)
+		arr = self.send field.to_sym
+		arr.select{|m| m.id == id || m.id.to_s == id}.first
+	end
 
 end
