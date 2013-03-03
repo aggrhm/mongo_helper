@@ -34,7 +34,11 @@ module MongoHelper
 			end
 		end
 
-		def mongoid_timestamps!
+    def mongoid_timestamps!
+      include Mongoid::Timestamps::Short
+    end
+
+		def mongoid_custom_timestamps!
 			field :c_at, as: :created_at, type: Time
 			field :u_at, as: :updated_at, type: Time
 
@@ -64,6 +68,7 @@ module MongoHelper
 			a.is_new = true if a.respond_to? :is_new
 			return a
 		end
+
 	end
 
 
@@ -137,5 +142,12 @@ module MongoHelper
 		arr = self.send field.to_sym
 		arr.select{|m| m.id == id || m.id.to_s == id}.first
 	end
+
+  def absorb_hash(model_key, val)
+    param = self.send(model_key)
+    val.keys.each do |key|
+      param[key] = val[key]
+    end
+  end
 
 end
