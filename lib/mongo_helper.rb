@@ -3,6 +3,10 @@ require "mongo_helper/storable"
 module MongoHelper
   extend ActiveSupport::Concern
 
+  def self.options
+    @options ||= {}
+  end
+
   module ClassMethods
     def attr_alias(new_attr, old_attr)
       alias_method(new_attr, old_attr)
@@ -31,11 +35,22 @@ module MongoHelper
 			end
 			define_method "#{enum}!" do |opt|
 				send("#{enum}=", opts[opt])
+        if self.respond_to? "#{enum}_changed_at"
+          send("#{enum}_changed_at=", Time.now)
+        end
 			end
 		end
 
     def mongoid_timestamps!
-      include Mongoid::Timestamps::Short
+      if MongoHelper.options[:timestamp_format] == :long
+        include Mongoid::Timestamps
+      else
+        include Mongoid::Timestamps::Short
+      end
+    end
+
+    def mongoid_timestamps_long!
+      include Mongoid::Timestamps
     end
 
 		def mongoid_custom_timestamps!
