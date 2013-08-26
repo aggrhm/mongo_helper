@@ -159,6 +159,7 @@ module MongoHelper
 	end
 
   def absorb_hash(model_key, val)
+    val = JSON.parse(val) if val.is_a?(String)
     param = self.send(model_key)
     val.keys.each do |key|
       param[key] = val[key]
