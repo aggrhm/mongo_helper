@@ -68,18 +68,19 @@ module MongoHelper
         end
       end
 
-      def new_embedded
-        a = self.new
-        a.id = BSON::ObjectId.new
-        a
-      end
-
       def mongo_new
         a = self.new
         #a.id = BSON::ObjectId.new
         a.created_at = Time.new if a.respond_to? :created_at
         a.updated_at = Time.new if a.respond_to? :updated_at
         a.is_new = true if a.respond_to? :is_new
+        return a
+      end
+
+      def embedded_new
+        a = self.new
+        a.created_at = Time.new if a.respond_to? :created_at
+        a.updated_at = Time.new if a.respond_to? :updated_at
         return a
       end
 
@@ -165,6 +166,14 @@ module MongoHelper
       end
     end
 
+    def error_message
+      self.error_messages.first
+    end
+
+    def error_messages
+      self.errors.messages.values.flatten
+    end
+    
 
   end
 
