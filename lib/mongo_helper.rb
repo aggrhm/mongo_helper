@@ -1,6 +1,7 @@
 require "mongo_helper/model"
 require "mongo_helper/storable"
 require "mongo_helper/user_state"
+require "mongo_helper/assignment"
 
 module MongoHelper
 
