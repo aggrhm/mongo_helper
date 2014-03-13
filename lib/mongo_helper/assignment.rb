@@ -10,7 +10,7 @@ module MongoHelper
       def mongo_helper_assignment_keys!(db=:mongoid)
         include MongoHelper::Model
 
-        field :oid, type: Moped::BSON::ObjectId
+        field :oid
         field :tp, as: :type, type: Integer
         field :rl, as: :role, type: Integer
         field :mth, as: :meta, type: Hash, default: {}
