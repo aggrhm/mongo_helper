@@ -28,6 +28,7 @@ module MongoHelper
 
     def to_api(opt=:default)
       ret = {}
+      ret[:id] = self.id.to_s
       ret[:type] = self.type
       ret[:role] = self.role
       ret[:created_at] = self.created_at.to_i
