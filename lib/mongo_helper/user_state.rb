@@ -14,7 +14,7 @@ module MongoHelper
           include MongoHelper::Model
 
           field :mc, as: :model_class, type: String
-          field :mid, as: :model_id, type: Moped::BSON::ObjectId
+          field :mid, as: :model_id
           field :mth, as: :meta, type: Hash, default: Hash.new
 
           belongs_to :user, :foreign_key => 'uid', :class_name => 'User'
