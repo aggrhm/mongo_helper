@@ -23,7 +23,7 @@ module MongoHelper
         @associations_cache_def[field] = opts
       end
 
-      def update_cache(models, fields)
+      def update_cache(models, fields, options={})
         fields = [fields] if !fields.is_a?(Array)
         fields.each do |field|
           opts = @associations_cache_def[field]
@@ -34,8 +34,14 @@ module MongoHelper
             hash[key] = {ids: []}
           end
 
+          if options[:reload] == true
+            rms = models
+          else
+            rms = models.select{|m| m.cache[field].nil?}
+          end
+
           # get all ids and classes
-          models.each do |m|
+          rms.each do |m|
             cl = cl_fn.call(m)
             cln = cl.to_s
             ids = id_fn.call(m)
@@ -56,7 +62,7 @@ module MongoHelper
           #puts "#{field}: #{col_h.inspect}"
 
           # store association models in cache
-          models.each do |m|
+          rms.each do |m|
             id = id_fn.call(m)
             cl = cl_fn.call(m)
             cln = cl.to_s
@@ -76,6 +82,10 @@ module MongoHelper
       end
 
     end ## END CLASSMETHODS
+
+    def update_cache(fields, opts={})
+      self.class.update_cache([self], fields, opts)
+    end
 
     def cache
       @cache ||= {}
