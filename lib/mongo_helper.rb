@@ -3,6 +3,7 @@ require "mongo_helper/storable"
 require "mongo_helper/user_state"
 require "mongo_helper/assignment"
 require "mongo_helper/associations_cache"
+require "mongo_helper/stateable"
 
 module MongoHelper
 
