@@ -24,6 +24,7 @@ module MongoHelper
       end
 
       def update_cache(models, fields, options={})
+        models = [models] if !models.is_a?(Array)
         fields = [fields] if !fields.is_a?(Array)
         fields.each do |field|
           opts = @associations_cache_def[field]
