@@ -58,7 +58,7 @@ module MongoHelper
 
     end
 
-    def update_state!(state)
+    def set_state!(state)
       self.state! state
       self.save(validate: false)
       return self.state
