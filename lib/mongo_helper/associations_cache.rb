@@ -9,7 +9,7 @@ module MongoHelper
     module ClassMethods
 
       def cache_for(field, opts)
-        @associations_cache_def ||= {}
+        @associations_cache_def ||= {}.with_indifferent_access
         # fix opts
         if !opts[:class].is_a?(Proc)
           if opts[:class].is_a?(Symbol)
@@ -28,6 +28,7 @@ module MongoHelper
         fields = [fields] if !fields.is_a?(Array)
         fields.each do |field|
           opts = @associations_cache_def[field]
+          next if opts.nil?
           # setup
           id_fn = opts[:id]
           cl_fn = opts[:class]
