@@ -52,13 +52,18 @@ module MongoHelper
           end
 
           # find association models
-          col_h.each do |cln, opts|
-            opts[:ids] = opts[:ids].flatten.uniq.reject{|id| id.nil?}
-            cl = opts[:class]
-            ids = opts[:ids]
-            opts[:models] = {}
-            cl.find(ids).to_a.each do |sm|
-              opts[:models][sm.id.to_s] = sm
+          col_h.each do |cln, copts|
+            copts[:ids] = copts[:ids].flatten.compact.uniq
+            cl = copts[:class]
+            ids = copts[:ids]
+            copts[:models] = {}
+            if opts[:scope]
+              res = cl.send(opts[:scope], ids)
+            else
+              res = cl.find(ids)
+            end
+            res.to_a.each do |sm|
+              copts[:models][sm.id.to_s] = sm
             end
           end
           #puts "#{field}: #{col_h.inspect}"
@@ -68,14 +73,19 @@ module MongoHelper
             id = id_fn.call(m)
             cl = cl_fn.call(m)
             cln = cl.to_s
-            if id.nil?
-              m.cache[field] = nil
-            elsif id.is_a?(Array)
-              m.cache[field] = id.collect{|i|
-                col_h[cln][:models][i.to_s]
-              }.reject{|m| m.nil?}
+            if opts[:selector]
+              fms = col_h[cln][:models].values
+              m.cache[field] = fms.select{|fm| opts[:selector].call(fm, m)} 
             else
-              m.cache[field] = col_h[cln][:models][id.to_s]
+              if id.nil?
+                m.cache[field] = nil
+              elsif id.is_a?(Array)
+                m.cache[field] = id.collect{|i|
+                  col_h[cln][:models][i.to_s]
+                }.compact
+              else
+                m.cache[field] = col_h[cln][:models][id.to_s]
+              end
             end
           end
           #puts "#{field}: #{m.cache[field].inspect}"
